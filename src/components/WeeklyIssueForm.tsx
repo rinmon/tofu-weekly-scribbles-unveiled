@@ -25,6 +25,28 @@ export const WeeklyIssueForm = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [week, setWeek] = useState("");
+  const [duplicateWarning, setDuplicateWarning] = useState("");
+  const [canSave, setCanSave] = useState(true);
+
+  // 入力時重複チェック
+  const checkDuplicate = async (value: string, field: 'week' | 'title') => {
+    if (!value) {
+      setDuplicateWarning("");
+      setCanSave(true);
+      return;
+    }
+    const { data } = await supabase
+      .from('weekly_issues')
+      .select('*')
+      .eq(field, value);
+    if (data && data.length > 0) {
+      setDuplicateWarning(`${field === 'week' ? '週' : 'タイトル'}が既に存在します`);
+      setCanSave(false);
+    } else {
+      setDuplicateWarning("");
+      setCanSave(true);
+    }
+  };
   const [summary, setSummary] = useState("");
   const [highlights, setHighlights] = useState<string[]>([]);
   const [newHighlight, setNewHighlight] = useState("");
@@ -129,6 +151,9 @@ export const WeeklyIssueForm = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
+            {duplicateWarning && (
+              <span className="text-destructive text-sm ml-4">{duplicateWarning}</span>
+            )}
             <PlusCircle className="w-5 h-5 text-primary" />
             新しい週刊号を作成
           </CardTitle>
@@ -141,7 +166,11 @@ export const WeeklyIssueForm = () => {
                 id="title"
                 placeholder="TOFUラボ週刊号 #1"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={async (e) => {
+                  setTitle(e.target.value);
+                  await checkDuplicate(e.target.value, 'title');
+                }}
+                onBlur={async (e) => await checkDuplicate(e.target.value, 'title')}
               />
             </div>
             <div className="space-y-2">
@@ -150,7 +179,11 @@ export const WeeklyIssueForm = () => {
                 id="week"
                 placeholder="2024年1月第1週"
                 value={week}
-                onChange={(e) => setWeek(e.target.value)}
+                onChange={async (e) => {
+                  setWeek(e.target.value);
+                  await checkDuplicate(e.target.value, 'week');
+                }}
+                onBlur={async (e) => await checkDuplicate(e.target.value, 'week')}
               />
             </div>
           </div>
@@ -283,7 +316,7 @@ export const WeeklyIssueForm = () => {
           <Eye className="w-4 h-4 mr-2" />
           プレビュー
         </Button>
-        <Button onClick={handleSave} disabled={isLoading}>
+        <Button onClick={handleSave} disabled={isLoading || !canSave}>
           <Save className="w-4 h-4 mr-2" />
           {isLoading ? "保存中..." : "保存"}
         </Button>
