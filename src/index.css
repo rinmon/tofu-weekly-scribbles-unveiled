@@ -114,6 +114,11 @@
 }
 
 @layer components {
+  /* プライマリグラデーション（コンポーネント用） */
+  .gradient-primary {
+    background: var(--gradient-neon);
+  }
+
   /* ネオングラデーション */
   .gradient-neon {
     background: var(--gradient-neon);
