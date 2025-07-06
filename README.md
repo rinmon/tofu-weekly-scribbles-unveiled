@@ -48,14 +48,23 @@ TOFUラボ週刊情報誌アプリは、Discord・Webサイト・YouTube等か�
 ---
 - Tailwind CSS
 
-## How can I deploy this project?
+## デプロイ・運用方法
 
-Simply open [Lovable](https://lovable.dev/projects/7ca7e201-0458-452f-bc43-813022d983ae) and click on Share -> Publish.
+> ※このプロジェクトは社内・クローズド運用を前提としています。公開環境や重要な認証情報・APIキー等は必ず非公開・安全に管理してください。
 
-## Can I connect a custom domain to my Lovable project?
+### 基本的な運用フロー
 
-Yes, you can!
+1. **ローカルで開発・テストし、GitHubへpush**
+2. **サーバー（NAS等）側で最新コードをpullし、ビルド・再起動**
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+#### サーバー側自動デプロイ例（Webhook活用）
+- GitHubのWebhook機能でpush時にサーバーへ通知し、
+  - `git pull`
+  - `npm install`
+  - `npm run build`
+  - 必要に応じてサービス再起動
+- サンプルスクリプトや設定例は `deploy-hook.sh` などを参照
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+> 詳細な運用手順・セキュリティ設定はプロジェクト管理者にご確認ください。
+
+---

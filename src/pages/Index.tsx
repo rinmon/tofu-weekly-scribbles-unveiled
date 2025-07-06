@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { WeeklyIssue, CollectedData } from "@/integrations/supabase/custom-types";
 import { useToast } from "@/hooks/use-toast";
+import { VersionInfo } from "@/components/VersionInfo";
 
 interface WeeklyIssueWithStats extends WeeklyIssue {
   sources?: {
@@ -316,6 +317,7 @@ const Index = () => {
             </div>
           )}
         </main>
+        <VersionInfo />
       </div>
     </div>
   );
