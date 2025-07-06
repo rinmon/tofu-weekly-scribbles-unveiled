@@ -1,92 +1,107 @@
 import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit3, Share, Calendar, Eye, MessageSquare, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { WeeklyIssue, CollectedData } from "@/integrations/supabase/custom-types";
+import { useToast } from "@/hooks/use-toast";
 
-// サンプルデータ（実際の実装ではAPIから取得）
-const sampleIssue = {
-  id: "2",
-  title: "TOFUラボ週刊号 #2",
-  week: "2024年1月第2週",
-  date: "2024/01/08 - 2024/01/14",
-  summary: "KINOKAテンプレートがリリースされ、和風デザインに関する議論が盛り上がりました。また、SEO対策についてのワークショップも開催されました。",
-  highlights: ["KINOKAテンプレート", "和風デザイン", "SEO対策", "ワークショップ"],
-  sources: {
-    discord: 22,
-    website: 5,
-    youtube: 1
-  },
-  status: "published" as const,
-  publishedDate: "2024/01/15",
-  wordpressUrl: "https://blog.tofulab.app/weekly-2",
-  content: `
-# TOFUラボ週刊号 #2
-
-## 今週のハイライト
-
-### 🎨 KINOKAテンプレート リリース
-
-今週、待望の和風デザインテンプレート「KINOKA」がリリースされました。
-
-**特徴:**
-- さりげないあしらいが印象的な和デザイン
-- モバイルファーストのレスポンシブデザイン
-- Elementorで完全カスタマイズ可能
-
-### 💬 Discord ハイライト
-
-**和風デザインについての議論**
-- 「日本の伝統色の使い方について」
-- 「モダンと和の融合テクニック」
-- 「KINOKAテンプレートの活用事例」
-
-**技術的な話題**
-- WordPressの高速化テクニック
-- Elementorの新機能について
-- SEO対策の最新情報
-
-### 📺 YouTube 更新情報
-
-**新着動画:**
-- 「和風サイトの作り方 - KINOKAテンプレート解説」
-  - 再生回数: 1,200回
-  - 高評価: 98%
-
-### 🌐 ウェブサイト更新
-
-**新規記事:**
-- 「2024年のWebデザイントレンド」
-- 「SEO対策の基本と応用」
-- 「Elementorプロの使い方ガイド」
-
-**テンプレート更新:**
-- KINOKAテンプレート v1.0 リリース
-- 既存テンプレートのバグ修正
-
-## コミュニティ統計
-
-- 新規メンバー: 15名
-- 投稿数: 156件  
-- 質問解決数: 23件
-- ワークショップ参加者: 42名
-
-## 来週の予定
-
-- FLEURテンプレートの制作開始予定
-- SEO対策ワークショップ開催
-- コミュニティイベント企画
-
----
-
-*TOFUラボコミュニティで一緒に学びませんか？*  
-[コミュニティに参加する](https://community.tofulab.app/)
-  `
-};
+interface WeeklyIssueWithStats extends WeeklyIssue {
+  sources?: {
+    discord: number;
+    website: number;
+    youtube: number;
+  };
+}
 
 const IssueDetail = () => {
   const { id } = useParams();
+  const { toast } = useToast();
+  const [issue, setIssue] = useState<WeeklyIssueWithStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    fetchIssueData();
+  }, [id]);
+
+  const fetchIssueData = async () => {
+    try {
+      // 週刊号のデータを取得
+      const { data: issueData, error: issueError } = await supabase
+        .from('weekly_issues')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (issueError) throw issueError;
+
+      // ソース統計を取得
+      const { data: sources } = await supabase
+        .from('collected_data')
+        .select('source_type')
+        .eq('issue_id', id);
+
+      const stats = (sources || []).reduce(
+        (acc, item) => {
+          acc[item.source_type] = (acc[item.source_type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
+
+      setIssue({
+        ...issueData,
+        status: issueData.status as 'draft' | 'published' | 'archived',
+        sources: {
+          discord: stats.discord || 0,
+          website: stats.website || 0,
+          youtube: stats.youtube || 0
+        }
+      } as WeeklyIssueWithStats);
+    } catch (error: any) {
+      toast({
+        title: "データの取得に失敗しました",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 gradient-neon rounded-2xl flex items-center justify-center mx-auto animate-glow">
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-muted-foreground">週刊号を読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!issue) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold text-foreground">週刊号が見つかりません</h2>
+          <p className="text-muted-foreground">指定された週刊号は存在しないか、削除された可能性があります。</p>
+          <Button asChild className="gradient-neon border-0 shadow-neon">
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              ダッシュボードに戻る
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,20 +118,20 @@ const IssueDetail = () => {
               </Button>
               <Separator orientation="vertical" className="h-6" />
               <div>
-                <h1 className="text-xl font-bold text-foreground">{sampleIssue.title}</h1>
+                <h1 className="text-xl font-bold text-foreground">{issue.title}</h1>
                 <p className="text-sm text-muted-foreground flex items-center">
                   <Calendar className="w-4 h-4 mr-1" />
-                  {sampleIssue.week} - {sampleIssue.date}
+                  {issue.week_period} - {issue.start_date} ～ {issue.end_date}
                 </p>
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
               <Badge 
-                variant={sampleIssue.status === "published" ? "default" : "secondary"}
+                variant={issue.status === "published" ? "default" : "secondary"}
                 className="gradient-neon-alt border-0"
               >
-                {sampleIssue.status === "published" ? "公開済み" : "下書き"}
+                {issue.status === "published" ? "公開済み" : "下書き"}
               </Badge>
               <Button variant="outline" size="sm" className="hover-glow">
                 <Share className="w-4 h-4 mr-2" />
@@ -146,7 +161,7 @@ const IssueDetail = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-foreground leading-relaxed">{sampleIssue.summary}</p>
+                <p className="text-foreground leading-relaxed">{issue.summary || "要約がありません。"}</p>
               </CardContent>
             </Card>
 
@@ -160,15 +175,19 @@ const IssueDetail = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {sampleIssue.highlights.map((highlight, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="outline" 
-                      className="border-neon-blue/30 text-neon-blue hover:bg-neon-blue/10"
-                    >
-                      {highlight}
-                    </Badge>
-                  ))}
+                  {issue.highlights && issue.highlights.length > 0 ? (
+                    issue.highlights.map((highlight, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="border-neon-blue/30 text-neon-blue hover:bg-neon-blue/10"
+                      >
+                        {highlight}
+                      </Badge>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground">ハイライトがありません。</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -181,7 +200,7 @@ const IssueDetail = () => {
               <CardContent>
                 <div className="prose prose-invert max-w-none">
                   <pre className="whitespace-pre-wrap font-sans text-foreground leading-relaxed">
-                    {sampleIssue.content}
+                    {issue.content?.raw || "記事内容がありません。"}
                   </pre>
                 </div>
               </CardContent>
@@ -198,15 +217,15 @@ const IssueDetail = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-neon-blue/10 border border-neon-blue/20">
                   <span className="text-sm text-muted-foreground">Discord</span>
-                  <span className="font-semibold text-neon-blue">{sampleIssue.sources.discord}</span>
+                  <span className="font-semibold text-neon-blue">{issue.sources?.discord || 0}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-neon-purple/10 border border-neon-purple/20">
                   <span className="text-sm text-muted-foreground">ウェブサイト</span>
-                  <span className="font-semibold text-neon-purple">{sampleIssue.sources.website}</span>
+                  <span className="font-semibold text-neon-purple">{issue.sources?.website || 0}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-neon-pink/10 border border-neon-pink/20">
                   <span className="text-sm text-muted-foreground">YouTube</span>
-                  <span className="font-semibold text-neon-pink">{sampleIssue.sources.youtube}</span>
+                  <span className="font-semibold text-neon-pink">{issue.sources?.youtube || 0}</span>
                 </div>
               </CardContent>
             </Card>
@@ -218,23 +237,27 @@ const IssueDetail = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">投稿日:</span>
-                  <span className="text-foreground">{sampleIssue.publishedDate}</span>
+                  <span className="text-muted-foreground">作成日:</span>
+                  <span className="text-foreground">{new Date(issue.created_at).toLocaleDateString('ja-JP')}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">更新日:</span>
+                  <span className="text-foreground">{new Date(issue.updated_at).toLocaleDateString('ja-JP')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">ステータス:</span>
                   <Badge variant="default" className="gradient-neon-alt border-0 text-xs">
-                    {sampleIssue.status === "published" ? "公開済み" : "下書き"}
+                    {issue.status === "published" ? "公開済み" : "下書き"}
                   </Badge>
                 </div>
-                {sampleIssue.wordpressUrl && (
+                {issue.wordpress_url && (
                   <Button 
                     asChild 
                     variant="outline" 
                     size="sm" 
                     className="w-full hover-glow"
                   >
-                    <a href={sampleIssue.wordpressUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={issue.wordpress_url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="w-4 h-4 mr-2" />
                       WordPressで見る
                     </a>
