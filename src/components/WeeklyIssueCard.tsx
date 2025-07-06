@@ -3,24 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Eye, MessageSquare, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { WeeklyIssue } from "@/integrations/supabase/custom-types";
 
-interface WeeklyIssue {
-  id: string;
-  title: string;
-  week: string;
-  date: string;
-  summary: string;
-  highlights: string[];
-  sources: {
+interface WeeklyIssueWithStats extends WeeklyIssue {
+  sources?: {
     discord: number;
     website: number;
     youtube: number;
   };
-  status: "draft" | "published";
 }
 
 interface WeeklyIssueCardProps {
-  issue: WeeklyIssue;
+  issue: WeeklyIssueWithStats;
 }
 
 export const WeeklyIssueCard = ({ issue }: WeeklyIssueCardProps) => {
@@ -34,7 +28,7 @@ export const WeeklyIssueCard = ({ issue }: WeeklyIssueCardProps) => {
             </h3>
             <p className="text-sm text-muted-foreground flex items-center">
               <Calendar className="w-4 h-4 mr-1" />
-              {issue.week} - {issue.date}
+              {issue.week_period} - {issue.start_date} ～ {issue.end_date}
             </p>
           </div>
           <Badge 
@@ -62,19 +56,19 @@ export const WeeklyIssueCard = ({ issue }: WeeklyIssueCardProps) => {
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="space-y-1 p-2 rounded-lg bg-neon-blue/10 border border-neon-blue/20">
             <div className="text-lg font-semibold text-neon-blue">
-              {issue.sources.discord}
+              {issue.sources?.discord || 0}
             </div>
             <div className="text-xs text-muted-foreground">Discord</div>
           </div>
           <div className="space-y-1 p-2 rounded-lg bg-neon-purple/10 border border-neon-purple/20">
             <div className="text-lg font-semibold text-neon-purple">
-              {issue.sources.website}
+              {issue.sources?.website || 0}
             </div>
             <div className="text-xs text-muted-foreground">サイト</div>
           </div>
           <div className="space-y-1 p-2 rounded-lg bg-neon-pink/10 border border-neon-pink/20">
             <div className="text-lg font-semibold text-neon-pink">
-              {issue.sources.youtube}
+              {issue.sources?.youtube || 0}
             </div>
             <div className="text-xs text-muted-foreground">YouTube</div>
           </div>
