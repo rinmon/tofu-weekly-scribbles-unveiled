@@ -6,12 +6,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { Trash2, Edit, Plus, ExternalLink, Calendar, User, Globe } from 'lucide-react'
+import { Trash2, Edit, Plus, ExternalLink, Calendar, User, Globe, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { CollectedData } from '@/integrations/supabase/custom-types'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
+import { Link } from 'react-router-dom'
 
 const DataCollection = () => {
   const [collectedData, setCollectedData] = useState<CollectedData[]>([])
@@ -151,6 +152,16 @@ const DataCollection = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        {/* 戻るボタン */}
+        <div className="mb-6">
+          <Button asChild variant="ghost" className="hover-glow">
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              ダッシュボードに戻る
+            </Link>
+          </Button>
+        </div>
+
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">データ収集管理</h1>
