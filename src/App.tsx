@@ -8,6 +8,7 @@ import { LoginForm } from "@/components/LoginForm";
 import Index from "./pages/Index";
 import CreateIssue from "./pages/CreateIssue";
 import IssueDetail from "./pages/IssueDetail";
+import DataCollection from "./pages/DataCollection";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const AuthenticatedApp = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/create" element={<CreateIssue />} />
+        <Route path="/collect" element={<DataCollection />} />
         <Route path="/issue/:id" element={<IssueDetail />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

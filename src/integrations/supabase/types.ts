@@ -9,7 +9,196 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      api_usage_stats: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          endpoint: string | null
+          id: string
+          requests_count: number | null
+          service: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          endpoint?: string | null
+          id?: string
+          requests_count?: number | null
+          service: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          endpoint?: string | null
+          id?: string
+          requests_count?: number | null
+          service?: string
+        }
+        Relationships: []
+      }
+      collected_data: {
+        Row: {
+          author: string | null
+          collected_at: string | null
+          content: string | null
+          id: string
+          issue_id: string | null
+          metadata: Json | null
+          processed: boolean | null
+          source_type: string
+          title: string | null
+          url: string | null
+        }
+        Insert: {
+          author?: string | null
+          collected_at?: string | null
+          content?: string | null
+          id?: string
+          issue_id?: string | null
+          metadata?: Json | null
+          processed?: boolean | null
+          source_type: string
+          title?: string | null
+          url?: string | null
+        }
+        Update: {
+          author?: string | null
+          collected_at?: string | null
+          content?: string | null
+          id?: string
+          issue_id?: string | null
+          metadata?: Json | null
+          processed?: boolean | null
+          source_type?: string
+          title?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collected_data_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_history: {
+        Row: {
+          error_message: string | null
+          id: string
+          issue_id: string | null
+          posted_at: string | null
+          retry_count: number | null
+          status: string | null
+          wordpress_post_id: number | null
+          wordpress_url: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          issue_id?: string | null
+          posted_at?: string | null
+          retry_count?: number | null
+          status?: string | null
+          wordpress_post_id?: number | null
+          wordpress_url?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          issue_id?: string | null
+          posted_at?: string | null
+          retry_count?: number | null
+          status?: string | null
+          wordpress_post_id?: number | null
+          wordpress_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_history_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          settings: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          settings?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      weekly_issues: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          created_by: string | null
+          end_date: string
+          highlights: string[] | null
+          id: string
+          start_date: string
+          status: string | null
+          summary: string | null
+          title: string
+          updated_at: string | null
+          week_period: string
+          wordpress_post_id: number | null
+          wordpress_url: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date: string
+          highlights?: string[] | null
+          id?: string
+          start_date: string
+          status?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string | null
+          week_period: string
+          wordpress_post_id?: number | null
+          wordpress_url?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          end_date?: string
+          highlights?: string[] | null
+          id?: string
+          start_date?: string
+          status?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string | null
+          week_period?: string
+          wordpress_post_id?: number | null
+          wordpress_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

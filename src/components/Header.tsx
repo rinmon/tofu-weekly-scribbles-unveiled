@@ -8,12 +8,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, User, Search, LogOut, Settings } from "lucide-react";
+import { Bell, User, Search, LogOut, Settings, Database, Plus, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/components/AuthProvider";
+import { Link, useLocation } from "react-router-dom";
 
 export const Header = () => {
   const { user, signOut } = useAuth();
+  const location = useLocation();
 
   const handleSignOut = async () => {
     try {
@@ -23,12 +25,61 @@ export const Header = () => {
     }
   };
 
+  const isActiveRoute = (path: string) => location.pathname === path;
+
   return (
     <header className="bg-card/50 backdrop-blur-sm border-b border-border/30 shadow-dark">
       <div className="px-6 py-3">
         <div className="flex items-center justify-between">
+          {/* ナビゲーション */}
+          <div className="flex items-center space-x-4">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 gradient-neon rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">T</span>
+              </div>
+              <span className="font-bold text-lg text-foreground hidden md:block">
+                TOFUラボ
+              </span>
+            </Link>
+            
+            <nav className="flex items-center space-x-2">
+              <Link to="/">
+                <Button 
+                  variant={isActiveRoute('/') ? 'default' : 'ghost'}
+                  size="sm"
+                  className={isActiveRoute('/') ? 'gradient-primary' : 'hover-glow'}
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  ホーム
+                </Button>
+              </Link>
+              
+              <Link to="/collect">
+                <Button 
+                  variant={isActiveRoute('/collect') ? 'default' : 'ghost'}
+                  size="sm"
+                  className={isActiveRoute('/collect') ? 'gradient-primary' : 'hover-glow'}
+                >
+                  <Database className="w-4 h-4 mr-2" />
+                  データ収集
+                </Button>
+              </Link>
+              
+              <Link to="/create">
+                <Button 
+                  variant={isActiveRoute('/create') ? 'default' : 'ghost'}
+                  size="sm"
+                  className={isActiveRoute('/create') ? 'gradient-primary' : 'hover-glow'}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  週刊号作成
+                </Button>
+              </Link>
+            </nav>
+          </div>
+
           {/* 検索バー */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
