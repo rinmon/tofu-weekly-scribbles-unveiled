@@ -1,16 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
-// Supabase設定（Lovableで自動設定される環境変数を使用）
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// 型定義
+// Custom type definitions for application use
 export interface WeeklyIssue {
   id: string
   title: string

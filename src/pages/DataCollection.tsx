@@ -8,22 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Trash2, Edit, Plus, ExternalLink, Calendar, User, Globe } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { CollectedData } from '@/integrations/supabase/custom-types'
 import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
-
-type CollectedData = {
-  id: string
-  source_type: 'discord' | 'youtube' | 'website' | 'template'
-  title: string | null
-  content: string | null
-  url: string | null
-  author: string | null
-  metadata: any
-  collected_at: string
-  processed: boolean
-  issue_id: string | null
-}
 
 const DataCollection = () => {
   const [collectedData, setCollectedData] = useState<CollectedData[]>([])
