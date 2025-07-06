@@ -16,6 +16,8 @@ const queryClient = new QueryClient();
 const AuthenticatedApp = () => {
   const { user, loading } = useAuth();
 
+  console.log('AuthenticatedApp - Loading:', loading, 'User:', user?.email)
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -24,15 +26,18 @@ const AuthenticatedApp = () => {
             <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
           <p className="text-muted-foreground">システムを準備中...</p>
+          <p className="text-xs text-muted-foreground">認証状態を確認しています</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
+    console.log('No user found, showing login form')
     return <LoginForm />;
   }
 
+  console.log('User authenticated, showing main app')
   return (
     <BrowserRouter>
       <Routes>

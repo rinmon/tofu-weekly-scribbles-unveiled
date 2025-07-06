@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 
 interface AuthContextType {
@@ -28,18 +28,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
+  console.log('AuthProvider - Current state:', { loading, user: user?.email, hasSession: !!session })
+
   useEffect(() => {
-    // 現在のセッションを取得
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    console.log('AuthProvider - Initializing auth...')
+    
+    const initializeAuth = async () => {
+      try {
+        console.log('AuthProvider - Getting session...')
+        // 現在のセッションを取得
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Session error:', error)
+        }
+        
+        console.log('AuthProvider - Session result:', { session: !!session, user: session?.user?.email })
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+      } finally {
+        console.log('AuthProvider - Setting loading to false')
+        setLoading(false)
+      }
+    }
+
+    initializeAuth()
 
     // 認証状態の変更を監視
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email)
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
