@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle, X, Save, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface Source {
   id: string;
@@ -20,6 +22,7 @@ interface Source {
 
 export const WeeklyIssueForm = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [week, setWeek] = useState("");
   const [summary, setSummary] = useState("");
@@ -27,6 +30,7 @@ export const WeeklyIssueForm = () => {
   const [newHighlight, setNewHighlight] = useState("");
   const [sources, setSources] = useState<Source[]>([]);
   const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const addHighlight = () => {
     if (newHighlight.trim() && !highlights.includes(newHighlight.trim())) {
@@ -61,7 +65,7 @@ export const WeeklyIssueForm = () => {
     setSources(sources.filter(source => source.id !== id));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !week || !summary) {
       toast({
         title: "入力エラー",
@@ -71,10 +75,53 @@ export const WeeklyIssueForm = () => {
       return;
     }
 
-    toast({
-      title: "保存完了",
-      description: "週刊号が正常に保存されました。"
-    });
+    setIsLoading(true);
+
+    try {
+      // 週の期間から開始日と終了日を計算（簡易版）
+      const currentDate = new Date();
+      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay());
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+
+      // 週刊号をSupabaseに保存
+      const { data, error } = await supabase
+        .from('weekly_issues')
+        .insert({
+          title,
+          week_period: week,
+          start_date: startDate.toISOString().split('T')[0],
+          end_date: endDate.toISOString().split('T')[0],
+          summary,
+          highlights,
+          content: JSON.parse(JSON.stringify({ 
+            raw: content,
+            sources: sources 
+          })),
+          status: 'draft',
+          created_by: (await supabase.auth.getUser()).data.user?.id
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "保存完了",
+        description: "週刊号が正常に保存されました。"
+      });
+
+      // ダッシュボードに戻る
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "保存エラー",
+        description: error.message || "保存中にエラーが発生しました。",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -236,9 +283,9 @@ export const WeeklyIssueForm = () => {
           <Eye className="w-4 h-4 mr-2" />
           プレビュー
         </Button>
-        <Button onClick={handleSave}>
+        <Button onClick={handleSave} disabled={isLoading}>
           <Save className="w-4 h-4 mr-2" />
-          保存
+          {isLoading ? "保存中..." : "保存"}
         </Button>
       </div>
     </div>
