@@ -93,15 +93,23 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
     } catch (error: any) {
       toast({
         title: mode === 'edit' ? "更新エラー" : "保存エラー",
-        description: error.message || (mode === 'edit' ? "更新中にエラーが発生しました。" : "保存中にエラーが発生しました。"),
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-
+    if (error) throw error;
+    toast({
+      title: mode === 'edit' ? "更新完了" : "保存完了",
+      description: mode === 'edit' ? "週刊号が正常に更新されました。" : "週刊号が正常に保存されました。"
+    });
+    navigate('/');
+  } catch (error: any) {
+    toast({
+      title: mode === 'edit' ? "更新エラー" : "保存エラー",
+      description: error.message || (mode === 'edit' ? "更新中にエラーが発生しました。" : "保存中にエラーが発生しました。"),
+      variant: "destructive"
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // 週番号・期間の自動計算
   const calculateWeekInfo = (date: Date | null) => {
