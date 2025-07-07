@@ -46,19 +46,6 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
 
   // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
   // ここより下で同じ変数やフックの再宣言があれば全て削除してください。
-  // 例: const { toast } = useToast(); ... などが2回以上出てきていないか確認し、1つだけ残す
-  // useState, useEffect, useNavigate, useToast などの重複宣言を削除
-  // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-
-
-
-  // handleSave関数
-  const handleSave = async () => {
-    if (!title || !week || !summary || !startDate || !endDate) {
-      toast({
-        title: "入力エラー",
-        description: "タイトル、週、要約、期間は必須項目です。",
-        variant: "destructive"
       });
       return;
     }
