@@ -176,12 +176,7 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
     }
   };
 
-  const [summary, setSummary] = useState("");
-  const [highlights, setHighlights] = useState<string[]>([]);
   const [newHighlight, setNewHighlight] = useState("");
-  const [sources, setSources] = useState<Source[]>([]);
-  const [content, setContent] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const addHighlight = () => {
     if (newHighlight.trim() && !highlights.includes(newHighlight.trim())) {
