@@ -44,11 +44,7 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
   const [canSave, setCanSave] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-  // ここより下で同じ変数やフックの再宣言があれば全て削除してください。
-      });
-      return;
-    }
+}
     setIsLoading(true);
     try {
       let result, error;
