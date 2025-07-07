@@ -71,14 +71,6 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
           .from('weekly_issues')
           .insert({
             title,
-            week_period: weekPeriod,
-            week,
-            start_date: startDate,
-            end_date: endDate,
-            summary,
-            highlights,
-            content: JSON.parse(JSON.stringify({ raw: content, sources })),
-            status: 'draft',
     }
     if (error) throw error;
     toast({
