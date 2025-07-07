@@ -118,16 +118,7 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
     }
   };
 
-  const { toast } = useToast();
-  const navigate = useNavigate();
-  const [title, setTitle] = useState("");
-  const [week, setWeek] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [weekPeriod, setWeekPeriod] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [duplicateWarning, setDuplicateWarning] = useState("");
-  const [canSave, setCanSave] = useState(true);
+
 
   // 週番号・期間の自動計算
   const calculateWeekInfo = (date: Date | null) => {
