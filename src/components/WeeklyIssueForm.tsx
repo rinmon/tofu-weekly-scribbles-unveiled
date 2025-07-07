@@ -25,8 +25,48 @@ export const WeeklyIssueForm = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [week, setWeek] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [weekPeriod, setWeekPeriod] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [duplicateWarning, setDuplicateWarning] = useState("");
   const [canSave, setCanSave] = useState(true);
+
+  // 週番号・期間の自動計算
+  const calculateWeekInfo = (date: Date | null) => {
+    if (!date) {
+      setWeek("");
+      setWeekPeriod("");
+      setStartDate("");
+      setEndDate("");
+      return;
+    }
+    // ISO週番号（日本式：月曜始まり）
+    const getWeekNumber = (d: Date) => {
+      const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = (date.getUTCDay() + 6) % 7; // 月曜=0
+      date.setUTCDate(date.getUTCDate() - dayNum + 3);
+      const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+      const weekNum = 1 + Math.round(
+        ((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7
+      );
+      return weekNum;
+    };
+
+    const weekNum = getWeekNumber(date);
+    const year = date.getFullYear();
+    setWeek(`${year}-W${weekNum.toString().padStart(2, "0")}`);
+
+    // 週の開始日（月曜）
+    const dayOfWeek = date.getDay() === 0 ? 7 : date.getDay();
+    const monday = new Date(date);
+    monday.setDate(date.getDate() - dayOfWeek + 1);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    setStartDate(monday.toISOString().split('T')[0]);
+    setEndDate(sunday.toISOString().split('T')[0]);
+    setWeekPeriod(`${monday.toISOString().split('T')[0]} ～ ${sunday.toISOString().split('T')[0]}`);
+  };
 
   // 入力時重複チェック
   const checkDuplicate = async (value: string, field: 'week' | 'title') => {
@@ -47,6 +87,7 @@ export const WeeklyIssueForm = () => {
       setCanSave(true);
     }
   };
+
   const [summary, setSummary] = useState("");
   const [highlights, setHighlights] = useState<string[]>([]);
   const [newHighlight, setNewHighlight] = useState("");
@@ -88,10 +129,10 @@ export const WeeklyIssueForm = () => {
   };
 
   const handleSave = async () => {
-    if (!title || !week || !summary) {
+    if (!title || !week || !summary || !startDate || !endDate) {
       toast({
         title: "入力エラー",
-        description: "タイトル、週、要約は必須項目です。",
+        description: "タイトル、週、要約、期間は必須項目です。",
         variant: "destructive"
       });
       return;
@@ -100,20 +141,15 @@ export const WeeklyIssueForm = () => {
     setIsLoading(true);
 
     try {
-      // 週の期間から開始日と終了日を計算（簡易版）
-      const currentDate = new Date();
-      const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay());
-      const endDate = new Date(startDate);
-      endDate.setDate(startDate.getDate() + 6);
-
       // 週刊号をSupabaseに保存
       const { data, error } = await supabase
         .from('weekly_issues')
         .insert({
           title,
-          week_period: week,
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0],
+          week_period: weekPeriod,
+          week,
+          start_date: startDate,
+          end_date: endDate,
           summary,
           highlights,
           content: JSON.parse(JSON.stringify({ 
@@ -159,31 +195,46 @@ export const WeeklyIssueForm = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <Label htmlFor="week">対象週（開始日を選択）</Label>
+              <Input
+                id="week"
+                type="date"
+                value={selectedDate ? selectedDate.toISOString().split('T')[0] : ""}
+                onChange={e => {
+                  const date = e.target.value ? new Date(e.target.value) : null;
+                  setSelectedDate(date);
+                  calculateWeekInfo(date);
+                  // タイトル自動生成もここで
+                  if (date) {
+                    const weekNum = (() => {
+                      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+                      const dayNum = (d.getUTCDay() + 6) % 7;
+                      d.setUTCDate(d.getUTCDate() - dayNum + 3);
+                      const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4));
+                      return 1 + Math.round(((d.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+                    })();
+                    setTitle(`TOFUラボ週刊情報誌（${date.getFullYear()}年第${weekNum}週）`);
+                  }
+                }}
+              />
+              {weekPeriod && (
+                <div className="text-sm text-muted-foreground">
+                  週番号: <span className="font-mono">{week}</span> ／ 期間: <span className="font-mono">{weekPeriod}</span>
+                </div>
+              )}
+            </div>
+            <div className="space-y-4">
               <Label htmlFor="title">タイトル</Label>
               <Input
                 id="title"
-                placeholder="TOFUラボ週刊号 #1"
                 value={title}
-                onChange={async (e) => {
+                onChange={e => {
                   setTitle(e.target.value);
-                  await checkDuplicate(e.target.value, 'title');
+                  checkDuplicate(e.target.value, 'title');
                 }}
-                onBlur={async (e) => await checkDuplicate(e.target.value, 'title')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="week">週</Label>
-              <Input
-                id="week"
-                placeholder="2024年1月第1週"
-                value={week}
-                onChange={async (e) => {
-                  setWeek(e.target.value);
-                  await checkDuplicate(e.target.value, 'week');
-                }}
-                onBlur={async (e) => await checkDuplicate(e.target.value, 'week')}
+                placeholder="例: TOFUラボ週刊情報誌（2025年第27週）"
               />
             </div>
           </div>
