@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { WeeklyIssue } from "@/integrations/supabase/custom-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,103 @@ interface Source {
   date: string;
 }
 
-export const WeeklyIssueForm = () => {
+interface WeeklyIssueFormProps {
+  initialData?: Partial<WeeklyIssue>;
+  mode?: 'edit' | 'create';
+}
+
+export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFormProps) => {
+  // フック・状態定義はここだけ！
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [title, setTitle] = useState(initialData?.title || "");
+  const [week, setWeek] = useState(initialData?.week || "");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [weekPeriod, setWeekPeriod] = useState(initialData?.week_period || "");
+  const [startDate, setStartDate] = useState(initialData?.start_date || "");
+  const [endDate, setEndDate] = useState(initialData?.end_date || "");
+  const [summary, setSummary] = useState(initialData?.summary || "");
+  const [highlights, setHighlights] = useState<string[]>(initialData?.highlights || []);
+  const [content, setContent] = useState(initialData?.content || "");
+  const [sources, setSources] = useState(initialData?.sources || []);
+  const [duplicateWarning, setDuplicateWarning] = useState("");
+  const [canSave, setCanSave] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+  // ここより下で同じ変数やフックの再宣言があれば全て削除してください。
+  // 例: const { toast } = useToast(); ... などが2回以上出てきていないか確認し、1つだけ残す
+  // useState, useEffect, useNavigate, useToast などの重複宣言を削除
+  // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+
+
+
+  // handleSave関数
+  const handleSave = async () => {
+    if (!title || !week || !summary || !startDate || !endDate) {
+      toast({
+        title: "入力エラー",
+        description: "タイトル、週、要約、期間は必須項目です。",
+        variant: "destructive"
+      });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      let result, error;
+      if (mode === 'edit' && initialData?.id) {
+        // update
+        ({ data: result, error } = await supabase
+          .from('weekly_issues')
+          .update({
+            title,
+            week_period: weekPeriod,
+            week,
+            start_date: startDate,
+            end_date: endDate,
+            summary,
+            highlights,
+            content: JSON.parse(JSON.stringify({ raw: content, sources })),
+          })
+          .eq('id', initialData.id)
+          .select()
+          .single());
+      } else {
+        // insert
+        ({ data: result, error } = await supabase
+          .from('weekly_issues')
+          .insert({
+            title,
+            week_period: weekPeriod,
+            week,
+            start_date: startDate,
+            end_date: endDate,
+            summary,
+            highlights,
+            content: JSON.parse(JSON.stringify({ raw: content, sources })),
+            status: 'draft',
+            created_by: (await supabase.auth.getUser()).data.user?.id
+          })
+          .select()
+          .single());
+      }
+      if (error) throw error;
+      toast({
+        title: mode === 'edit' ? "更新完了" : "保存完了",
+        description: mode === 'edit' ? "週刊号が正常に更新されました。" : "週刊号が正常に保存されました。"
+      });
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: mode === 'edit' ? "更新エラー" : "保存エラー",
+        description: error.message || (mode === 'edit' ? "更新中にエラーが発生しました。" : "保存中にエラーが発生しました。"),
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -251,7 +348,7 @@ export const WeeklyIssueForm = () => {
           </div>
 
           <div className="space-y-3">
-            <Label>ハイライト</Label>
+            <Label>タグ</Label>
             <div className="flex gap-2">
               <Input
                 placeholder="重要なトピックやキーワードを追加"
