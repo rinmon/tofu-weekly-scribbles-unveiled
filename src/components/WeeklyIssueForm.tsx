@@ -79,14 +79,6 @@ export const WeeklyIssueForm = ({ initialData, mode = 'create' }: WeeklyIssueFor
             highlights,
             content: JSON.parse(JSON.stringify({ raw: content, sources })),
             status: 'draft',
-            created_by: (await supabase.auth.getUser()).data.user?.id
-          })
-          .select()
-          .single());
-      }
-      if (error) throw error;
-      toast({
-        title: mode === 'edit' ? "更新完了" : "保存完了",
     }
     if (error) throw error;
     toast({
