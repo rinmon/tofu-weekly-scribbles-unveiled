@@ -154,7 +154,7 @@ const Index = () => {
         
         <main className="flex-1 p-6 space-y-6">
           {/* ヒーローセクション */}
-          <section className="gradient-dark rounded-2xl p-8 border border-border/30 shadow-dark">
+          <section className="bg-[hsl(var(--card))] rounded-2xl p-8 border border-border/30 shadow">
             <div className="max-w-4xl space-y-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-12 h-12 gradient-neon rounded-xl flex items-center justify-center animate-glow">

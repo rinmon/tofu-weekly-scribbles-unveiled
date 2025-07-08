@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale'
 import { Link } from 'react-router-dom'
+import DiscordScrapingHelper from '@/components/DiscordScrapingHelper'
 
 const DataCollection = () => {
   const [collectedData, setCollectedData] = useState<CollectedData[]>([])
@@ -150,16 +151,19 @@ const DataCollection = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        {/* 戻るボタン */}
-        <div className="mb-6">
-          <Button asChild variant="ghost" className="hover-glow">
+    <div>
+      <div className="max-w-5xl mx-auto py-8 px-4">
+        {/* Discordスクレイピング支援UI */}
+        <div className="mb-8">
+          <DiscordScrapingHelper />
+        </div>
+        <div className="flex items-center gap-2 mb-6">
+          <Button asChild variant="ghost" size="icon">
             <Link to="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              ダッシュボードに戻る
+              <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>
+          <h1 className="text-2xl font-bold">データ収集・管理</h1>
         </div>
 
         <div className="flex items-center justify-between mb-8">

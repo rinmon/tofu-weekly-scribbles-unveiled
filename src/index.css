@@ -6,15 +6,17 @@
 
 @layer base {
   :root {
-    /* ダークテーマベースカラー */
-    --background: 220 25% 8%;           /* #1A1A1A */
-    --foreground: 0 0% 95%;             /* #F2F2F2 */
+    /* ライトテーマベースカラー */
+    --background: 0 0% 100%;           /* #FFFFFF */
+    --foreground: 220 25% 8%;          /* #1A1A1A */
 
-    --card: 220 20% 12%;                /* #2A2A2A */
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 100%;                 /* #FFFFFF */
+    --card-foreground: 220 25% 8%;     /* #1A1A1A */
 
-    --popover: 220 15% 15%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 98%;               /* #FAFAFA */
+    --popover-foreground: 220 25% 8%;  /* #1A1A1A */
+
+    --gradient-dark: linear-gradient(135deg, #f8fafc, #e5e7eb); /* ライトグラデーション */
 
     /* ネオンアクセントカラー */
     --neon-blue: 195 100% 50%;          /* #00D4FF */
